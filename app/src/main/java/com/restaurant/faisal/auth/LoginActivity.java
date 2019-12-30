@@ -37,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText password;
     Session session;
     String mUsername = "", mPassword = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +48,7 @@ public class LoginActivity extends AppCompatActivity {
         checkPermission();
         loginCheck();
     }
+
     private void checkPermission() {
         Dexter.withActivity(this)
                 .withPermissions(
@@ -61,11 +63,13 @@ public class LoginActivity extends AppCompatActivity {
             public void
             onPermissionsChecked(MultiplePermissionsReport report) {
             }
+
             @Override
             public void
             onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {/* ... */}
         }).check();
     }
+
     public void login() {
         DialogUtils.openDialog(this);
         AndroidNetworking.post(LOGIN)
@@ -74,32 +78,34 @@ public class LoginActivity extends AppCompatActivity {
                 .addBodyParameter("password",
                         password.getText().toString())
                 .build()
-                .getAsObject(LoginResponse.class, new
-                        ParsedRequestListener() {
-                            @Override
-                            public void onResponse(Object response) {
-                                if (response instanceof LoginResponse) {
-                                    LoginResponse res = (LoginResponse)
-                                            response;
-                                    if (res.getStatus().equals("success")) {
-                                        session.setIsLogin(true);
-                                        loginCheck();
-                                    } else {
-                                        Toast.makeText(LoginActivity.this,
-                                                "Email atau Username Salah", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                                DialogUtils.closeDialog();
+                .getAsObject(LoginResponse.class, new ParsedRequestListener() {
+                    @Override
+                    public void onResponse(Object response) {
+                        if (response instanceof LoginResponse) {
+                            LoginResponse res = (LoginResponse)
+                                    response;
+                            if (res.getStatus().equals("success")) {
+                                session.setIsLogin(true);
+                                session.setUserId(res.getLogin().getUserid());
+                                loginCheck();
+                            } else {
+                                Toast.makeText(LoginActivity.this,
+                                        "Email atau Username Salah", Toast.LENGTH_SHORT).show();
                             }
-                            @Override
-                            public void onError(ANError anError) {
-                                Toast.makeText(LoginActivity.this, "Terjadi kesalahan API", Toast.LENGTH_SHORT).show();
-                                        Toast.makeText(LoginActivity.this, "Terjadi kesalahan API : "+anError.getCause().toString(),
+                        }
+                        DialogUtils.closeDialog();
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Toast.makeText(LoginActivity.this, "Terjadi kesalahan API", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "Terjadi kesalahan API : " + anError.getCause().toString(),
                                 Toast.LENGTH_SHORT).show();
-                                DialogUtils.closeDialog();
-                            }
-                        });
+                        DialogUtils.closeDialog();
+                    }
+                });
     }
+
     private void loginCheck() {
         if (session.isLoggedIn()) {
             Intent i = new Intent(this, DashboardActivity.class);
@@ -109,22 +115,23 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         }
     }
+
     private void initBinding() {
         btnLogin = findViewById(R.id.btn_login);
         txtRegister = findViewById(R.id.txt_link_signup);
         email = findViewById(R.id.et_input_email);
         password = findViewById(R.id.et_input_password);
     }
+
     private void initButton() {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(email.getText().toString().equals("")){
+                if (email.getText().toString().equals("")) {
                     Toast.makeText(LoginActivity.this, "Email Tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                }else if(password.getText().toString().equals("")){
+                } else if (password.getText().toString().equals("")) {
                     Toast.makeText(LoginActivity.this, "Password Tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                }
-                else {
+                } else {
                     login();
                 }
             }
